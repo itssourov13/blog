@@ -33,7 +33,7 @@ export function MobileMenu({ links }: { links: NavLinkItem[] }) {
         overlayClassName="fixed inset-0 z-[100] bg-background"
         panelClassName="flex h-full flex-col"
       >
-        <div className="container-content flex h-16 shrink-0 items-center justify-between border-b border-border">
+        <div className="flex h-16 w-full shrink-0 items-center justify-between border-b border-border px-6">
           <span className="font-serif text-lg font-semibold text-foreground">Menu</span>
           <button
             type="button"
@@ -45,7 +45,7 @@ export function MobileMenu({ links }: { links: NavLinkItem[] }) {
             <X className="h-[18px] w-[18px]" aria-hidden="true" />
           </button>
         </div>
-        <nav className="container-content mt-8 flex flex-col gap-1" aria-label="Mobile">
+        <nav className="mt-8 flex w-full flex-col gap-1 px-6" aria-label="Mobile">
           {links.map((link) => (
             <NavLink
               key={link.href}
@@ -63,3 +63,4 @@ export function MobileMenu({ links }: { links: NavLinkItem[] }) {
     </>
   );
 }
+

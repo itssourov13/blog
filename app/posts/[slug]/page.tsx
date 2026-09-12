@@ -160,11 +160,11 @@ export default async function PostPage({
         </div>
       </div>
 
-      <div className="container-content grid gap-12 py-12 lg:grid-cols-[1fr_16rem]">
-        <aside className="order-2 print:hidden">
+      <div className="container-content grid grid-cols-[minmax(0,1fr)] gap-12 py-12 lg:grid-cols-[minmax(0,1fr)_16rem]">
+        <aside className="order-2 min-w-0 print:hidden">
           <TableOfContents items={tocOutput.items} />
         </aside>
-        <div id="article-content" className="article-prose order-1">
+        <div id="article-content" className="article-prose order-1 min-w-0">
           {content}
         </div>
       </div>
@@ -202,3 +202,4 @@ export default async function PostPage({
     </article>
   );
 }
+
