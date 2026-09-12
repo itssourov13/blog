@@ -1,0 +1,52 @@
+---
+title: "Container Escapes: A Field Guide"
+subtitle: "A container is an isolation boundary made of several smaller promises. Most escapes just find the one that wasn't kept."
+excerpt: "Namespaces, capabilities, and the kernel they all share — a tour of where container isolation actually breaks down, and the configuration that prevents most of it."
+category: "security"
+tags: ["containers", "linux", "kernel", "isolation"]
+publishedAt: "2025-12-08"
+---
+
+"Containers aren't VMs" gets repeated often enough that it's become a cliché, but the practical follow-up question — *so what specifically can go wrong* — gets skipped almost as often. Here's the shorter version of that answer.
+
+## The boundary is made of several separate things
+
+A container's isolation isn't one mechanism, it's several stacked together, and each has its own failure modes:
+
+- **Namespaces** give a process its own view of PIDs, mounts, network interfaces, and hostnames. They isolate *what a process can see*.
+- **Cgroups** limit resource usage. They isolate *what a process can consume*.
+- **Capabilities** narrow what a root-equivalent process inside the container can actually do, even though it's still root from its own point of view.
+- Underneath all of it: **one shared kernel**. Every container on a host is a set of processes on that same kernel, not a separate one.
+
+Escapes generally exploit the gap between "isolated" and "isolated for every kernel subsystem that happens to matter here."
+
+## The classic mistake: capabilities left on
+
+`--privileged` is the obvious case — it hands over essentially every capability plus device access, and most people who use it know that. The more common problem is a container that isn't `--privileged` but is still running with a capability it doesn't need:
+
+```bash
+# check what a running container actually has, rather than assuming
+# the default drop list covers you
+docker inspect --format '{{ .HostConfig.CapAdd }}' my-container
+```
+
+`CAP_SYS_ADMIN` is the one to watch for specifically — it's a grab-bag of dozens of unrelated privileged operations, several of which (mounting filesystems, certain namespace operations) are direct paths toward escaping to the host.
+
+<Callout type="warning">
+If a container genuinely needs `CAP_SYS_ADMIN`, that's worth treating as a design smell rather than a configuration detail — it's rarely one specific privileged syscall, and dropping to the *specific* capability actually needed (`CAP_NET_ADMIN`, `CAP_SYS_PTRACE`, whatever it actually is) is almost always possible with a bit more digging.
+</Callout>
+
+## The shared kernel is the real attack surface
+
+Even with capabilities correctly dropped, container isolation is only as strong as the kernel code paths a container process can still reach. Kernel vulnerabilities in namespace handling, in `overlayfs`, in cgroup v1's release_agent mechanism, have all produced real, documented escapes — not because the container runtime misconfigured something, but because the shared kernel itself had a bug reachable from inside the sandbox.
+
+This is the actual argument for gVisor, Kata Containers, or Firecracker-based isolation in genuinely hostile multi-tenant scenarios: they interpose a smaller, purpose-built surface (a user-space kernel, or a real hardware-virtualized boundary) between the container and the syscalls a compromised process could otherwise reach directly.
+
+## A short, practical checklist
+
+- Run containers as a non-root user inside the container, not just outside it.
+- Drop all capabilities by default (`--cap-drop=ALL`) and add back only what's specifically needed.
+- Keep the host kernel patched — this is the one item on this list that isn't a container configuration change at all, and it's arguably the most load-bearing.
+- Treat `--privileged`, hostPath mounts, and host networking as things that require a specific, written justification, not defaults.
+
+None of this makes a container a VM. It doesn't need to. It needs to make the gap between "isolated" and "isolated enough for what's actually running here" small enough that the shared kernel underneath stops being the easiest way out.

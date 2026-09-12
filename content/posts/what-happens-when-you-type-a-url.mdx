@@ -1,0 +1,50 @@
+---
+title: "What Actually Happens When You Type a URL (in 2026)"
+subtitle: "The classic interview question, updated for a web that does a lot more before it renders anything."
+excerpt: "DNS-over-HTTPS, HTTP/3, preloading, and speculative rendering have quietly rewritten the answer to the oldest question in web interviews."
+category: "web"
+tags: ["networking", "http3", "dns", "performance"]
+publishedAt: "2026-04-02"
+---
+
+"What happens when you type a URL into the address bar" is one of the oldest interview questions in the field, and the honest answer has changed more in the last five years than in the fifteen before that. Most write-ups of this question still describe a request path from 2015.
+
+## Resolving the name
+
+DNS resolution used to mean a plaintext UDP query to whatever resolver your network handed you — visible to anyone on the path. Most modern browsers now default to DNS-over-HTTPS (DoH) to a configured resolver, encrypting the query itself:
+
+```bash
+# what a browser is roughly doing under the hood now, instead of a bare
+# UDP query on port 53
+curl -H 'accept: application/dns-message' \
+  --data-binary @query.bin \
+  https://dns.resolver.example/dns-query
+```
+
+This closes a real observability gap for on-path networks and ISPs, and opens a different one — DNS resolution now depends on a specific resolver's availability and policies rather than whatever's configured at the OS level, which has its own debugging implications when something breaks.
+
+## Connecting: HTTP/3 changes more than the version number
+
+HTTP/3 runs over QUIC instead of TCP, which sounds like a transport detail until you notice what it fixes: TCP head-of-line blocking, where one dropped packet stalls every stream multiplexed on that connection. QUIC multiplexes at the transport layer itself, so a lost packet only stalls the stream it belonged to.
+
+The practical effect shows up most on lossy connections — mobile networks switching cells, congested wifi — where an HTTP/2 page can visibly stall waiting for a single retransmission while an HTTP/3 page keeps most requests moving.
+
+## The browser doesn't wait for you to finish deciding
+
+Before you've even pressed enter, a lot of browsers are already speculating:
+
+- **Preconnect/prefetch hints** from the previous page may have already opened a connection to the domain you're about to visit.
+- **Address bar prediction** can trigger a DNS lookup, and sometimes a full preconnect, based on your typed prefix matching history.
+- Some browsers speculatively render likely next navigations in a hidden process, ready to swap in instantly if you actually click through.
+
+<Callout type="note">
+This is why "time to first byte" measured from a cold client tells you less than it used to — a meaningful fraction of real navigations aren't cold at all by the time the user commits to them.
+</Callout>
+
+## Rendering, still mostly the same shape
+
+Once the response arrives, the core pipeline hasn't changed as much: parse HTML into a DOM, parse CSS into a CSSOM, combine them into a render tree, layout, paint, composite. What *has* changed is how much of this the browser can now do speculatively or off the main thread — off-main-thread paint work, GPU-accelerated compositing for more property types, and content-visibility hints that let a page tell the browser "don't bother laying this out until it's near the viewport."
+
+## Why this still matters as an interview question
+
+Not because anyone needs to recite QUIC's handshake from memory. It's a reasonable proxy for whether someone's mental model of the stack has been updated since they learned it, or whether they're describing a 2015 request path with new vocabulary stapled on.

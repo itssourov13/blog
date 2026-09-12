@@ -1,0 +1,49 @@
+---
+title: "Why I Stopped Trusting My Own Code Reviews"
+subtitle: "The bugs I approved were never the ones I was looking for."
+excerpt: "A look back at a year of self-reviewed pull requests and what they had in common: I was checking for the mistakes I already knew how to make."
+category: "engineering"
+tags: ["code-review", "process", "reliability"]
+publishedAt: "2026-06-11"
+---
+
+I went back through a year of incident write-ups looking for a pattern, expecting to find sloppy code. Instead I found something less comfortable: a lot of the causal commits had been reviewed, sometimes by me, and approved without much friction.
+
+## The reviews weren't careless
+
+That's what made it worth writing about. These weren't rubber-stamped, five-second approvals. The diffs were small, the logic looked locally correct, and the tests passed. The problem was almost always something the diff *didn't* show:
+
+- A caller three files away that assumed the old return type.
+- A retry path that only misbehaves under load the test suite never simulates.
+- A default value that was safe in every environment except the one where it mattered.
+
+A reviewer — including a past version of me — reads the diff in front of them. Most of the bugs that shipped weren't in that diff. They were in the gap between the diff and the system it lands in.
+
+## What changed after noticing this
+
+I stopped treating "does this diff look correct" as the review's job, and started treating it as the first of three separate questions:
+
+1. **Is this diff correct in isolation?** The question most review already answers well.
+2. **What does this change assume about the rest of the system?** Often unstated, rarely checked.
+3. **What does this change make easier to get wrong next time?** The one nobody asks, because it's not about this PR at all.
+
+<Callout type="note">
+Question three is the one that actually changed outcomes. A change that's correct today but removes a guardrail — a type that used to prevent a bad state, a check that used to run automatically — tends to show up as an incident three months later, attributed to whatever touched it last.
+</Callout>
+
+## A small habit that helped
+
+Before approving anything non-trivial, I started writing one sentence: "This is safe because ___." Not in the PR — just for myself. If I couldn't finish that sentence without hedging, that was the signal to actually go read the calling code, not just the diff.
+
+```bash
+# a cheap way to see who else depends on what you're touching,
+# before assuming the diff is self-contained
+git log --oneline -- path/to/changed/file.ts | head -20
+rg "functionBeingChanged\(" --type ts
+```
+
+It's not a process, and I don't think it scales into one — team-wide review checklists tend to become theater fast. It's closer to a personal correction: reviewing less like a linter and more like someone who has to be on call for what they approve.
+
+## The uncomfortable part
+
+None of this requires better reviewers. It requires admitting that "looks correct" and "is correct" are different claims, and that a clean diff is evidence for the first one, not the second.

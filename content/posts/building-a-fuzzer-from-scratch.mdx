@@ -1,0 +1,65 @@
+---
+title: "Notes on Building a Fuzzer From Scratch"
+subtitle: "What a weekend coverage-guided fuzzer teaches you that reading about them doesn't."
+excerpt: "Skipping AFL and libFuzzer to build the smallest possible coverage-guided fuzzer, just to understand what the real ones are actually doing under the hood."
+category: "research"
+tags: ["fuzzing", "rust", "testing", "security"]
+publishedAt: "2026-07-09"
+---
+
+I've used AFL and libFuzzer plenty. I hadn't built one. There's a specific kind of understanding that only shows up once you've implemented the thing you've only ever consumed, so I spent a weekend writing a minimal coverage-guided fuzzer from nothing, targeting a small parsing library.
+
+## The three parts that actually matter
+
+Strip away the tooling and a coverage-guided fuzzer is three loops wrapped around each other:
+
+1. **Mutate** an input from a corpus.
+2. **Run** the target and record which code paths executed.
+3. **Keep** the mutation if it found new coverage, discard it otherwise.
+
+Everything else — crash triage, minimization, parallelism — is valuable, but optional for a first version.
+
+## Getting coverage feedback without a real instrumentation pass
+
+The honest version of this uses compiler instrumentation (`-fsanitize=fuzzer` or SanitizerCoverage) to get an edge-coverage bitmap for free. For a from-scratch build, I wanted to see the mechanism, so I instrumented the target manually with a coverage macro instead:
+
+```rust
+static mut COVERAGE: [u8; 4096] = [0; 4096];
+
+macro_rules! hit {
+    ($id:expr) => {
+        unsafe {
+            COVERAGE[$id % 4096] = COVERAGE[$id % 4096].wrapping_add(1);
+        }
+    };
+}
+```
+
+Sprinkling `hit!(line!())` at branch points is crude — real tools do this at the compiler IR level, at every edge, automatically — but it's enough to demonstrate the actual signal a fuzzer is chasing: *did this input make the program do something it hasn't done before.*
+
+## The mutation loop
+
+```python
+def mutate(data: bytearray) -> bytearray:
+    data = bytearray(data)
+    strategy = random.choice(["bitflip", "splice", "insert_byte"])
+    if strategy == "bitflip" and data:
+        i = random.randrange(len(data))
+        data[i] ^= 1 << random.randrange(8)
+    elif strategy == "insert_byte":
+        i = random.randrange(len(data) + 1)
+        data.insert(i, random.randrange(256))
+    return data
+```
+
+<Callout type="note">
+The mutation strategy matters far less than people expect starting out. A dumb bitflip-and-splice mutator, run for millions of iterations against good coverage feedback, will out-fuzz a clever mutator with no feedback loop at all.
+</Callout>
+
+## What actually broke
+
+Within about twenty minutes of runtime, the fuzzer found an off-by-one in the parser's length-prefixed string handling — the kind of bug that's genuinely easy to miss reading the code, because the code "looks" correct at a skim. Coverage feedback found it by simply noticing that a slightly-too-long length field led somewhere new.
+
+## What I'd tell someone starting the same weekend
+
+Don't start with a real target. Start with something you can hold the whole state of in your head — a length-prefixed parser, a small state machine, a toy compression format. The goal of building one yourself isn't to replace AFL. It's to stop the coverage bitmap, the corpus, and the mutation loop from being magic words, so that when a real fuzzer *doesn't* find something, you have an intuition for why.

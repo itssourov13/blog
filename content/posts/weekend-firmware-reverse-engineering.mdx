@@ -1,0 +1,51 @@
+---
+title: "Reading a Weekend Project's Firmware Like a Puzzle"
+subtitle: "Pulling apart a $20 smart plug to see what it's actually sending home."
+excerpt: "A cheap smart plug, a UART header, and an afternoon with Ghidra. Notes from extracting and reading firmware I had no documentation for."
+category: "reverse-engineering"
+tags: ["firmware", "reverse-engineering", "ghidra", "iot"]
+publishedAt: "2026-08-14"
+---
+
+I bought a smart plug for eight dollars during a sale, mostly because I wanted to know what eight-dollar security looks like from the inside. This is what a weekend of poking at it looked like.
+
+## Finding a way in
+
+Most of these devices have a UART header broken out on the board even when there's no visible port — you just have to open the case. Four pads, usually silkscreened `TX`, `RX`, `GND`, sometimes unlabeled entirely.
+
+```bash
+# identify the UART with a logic analyzer first — guessing wrong and
+# wiring 3.3V into a pin expecting something else is how you get a
+# very expensive paperweight
+sudo pip install pyserial
+python3 -m serial.tools.miniterm /dev/ttyUSB0 115200
+```
+
+Booting it up over serial dumped a full U-Boot log, including the partition layout — which is often the single most useful piece of information you'll get for free. No exploit required, just a header someone forgot mattered.
+
+## Getting the actual firmware image
+
+With the partition table in hand, I pulled the flash directly with a clip rather than trying to intercept an OTA update:
+
+```bash
+flashrom -p ch341a_spi -r firmware-dump.bin
+binwalk -e firmware-dump.bin
+```
+
+`binwalk` found a SquashFS partition almost immediately, which extracted cleanly into a full filesystem — init scripts, a stripped MIPS binary handling the actual device logic, and a hardcoded MQTT broker address that was, unsurprisingly, not documented anywhere in the product listing.
+
+<Figure seed="firmware-map" category="reverse-engineering" caption="Rough map of the extracted partitions once binwalk had finished carving the image apart." />
+
+## Reading the binary
+
+The MIPS binary is where Ghidra actually earns its keep. A few things that made this specific binary easier than it could have been:
+
+- It wasn't stripped of all symbols — just the ones somebody thought to remove.
+- String references to the MQTT topics it subscribes to were sitting in plaintext, which gave a fast map of "what does this thing actually respond to."
+- The auth flow for firmware updates checked a signature, but the public key used to verify it was baked into the same image being verified — which is a defeat, not a control, if it's ever exposed on a device an attacker can already dump.
+
+None of this is a novel finding. It's closer to the median outcome for consumer IoT: the interesting part isn't a zero-day, it's how much you learn just by reading what's already there.
+
+## Why bother
+
+I don't reverse a device because I expect to find something dramatic. I do it because "trust the device" is a decision, and I'd rather make it with the firmware open in front of me than take the box's word for it.

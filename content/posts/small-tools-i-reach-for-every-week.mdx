@@ -1,0 +1,60 @@
+---
+title: "Small Tools I Reach for Every Week"
+subtitle: "None of these are new. All of them are still underused."
+excerpt: "A running list of small command-line tools that quietly save time — no framework, no configuration file, just useful defaults."
+category: "notes"
+tags: ["tooling", "cli", "productivity"]
+publishedAt: "2026-01-14"
+---
+
+This is a running notes page, not an essay — the kind of thing I'd want to hand a new teammate instead of re-explaining verbally every few months. No tool here is exotic. That's kind of the point.
+
+## Searching
+
+`ripgrep` (`rg`) has fully replaced `grep` in my terminal, mostly for the defaults: it skips `.gitignore`'d files automatically, and it's fast enough that I stopped thinking about narrowing the search path first.
+
+```bash
+rg "TODO|FIXME" --type ts -g '!*.test.ts'
+```
+
+`fzf` for anything involving picking one thing out of a list I don't want to scroll through — command history, branch names, file paths.
+
+```bash
+git branch | fzf | xargs git checkout
+```
+
+## Reading what changed
+
+`git diff --stat` before `git diff` on any pull request bigger than a screen — a shape check before you commit to reading line by line.
+
+```bash
+git diff --stat main...HEAD
+```
+
+`tig` for browsing history interactively when `git log` starts to feel like reading through a keyhole.
+
+<Callout type="note">
+None of these replace understanding git. They replace the friction of *using* git, which is a different problem and, in practice, the one that eats more time day to day.
+</Callout>
+
+## Inspecting things that don't want to be inspected
+
+`jq` for anything JSON, obviously — but the specific habit worth building is reaching for it on API responses immediately, rather than eyeballing minified output first.
+
+```bash
+curl -s https://api.example.com/status | jq '.services[] | select(.healthy == false)'
+```
+
+`strace`/`dtrace` when a program is doing something unexplained and the documentation isn't helping. Most people reach for these far less often than the situations that call for them.
+
+## Keeping notes that are actually searchable
+
+A flat directory of markdown files plus `rg` beats most dedicated notes apps for technical notes specifically, because the notes end up searchable with the same tool and the same habits you already use on code.
+
+```bash
+rg -l "postgres" ~/notes/ | xargs bat
+```
+
+## The pattern, if there is one
+
+Every tool on this list does one narrow thing well and gets out of the way. None of them are trying to be a platform. That's not an accident — it's usually the reason they're still the default recommendation a decade after they were written.

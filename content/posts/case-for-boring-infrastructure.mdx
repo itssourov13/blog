@@ -1,0 +1,46 @@
+---
+title: "The Case for Boring Infrastructure"
+subtitle: "The best incident is the one nobody has to write up, because nothing interesting happened."
+excerpt: "A defense of the unglamorous parts of an infrastructure stack — the ones that never make it into a conference talk because they never broke."
+category: "cloud"
+tags: ["infrastructure", "reliability", "terraform"]
+publishedAt: "2026-03-05"
+---
+
+Every infrastructure retrospective I've read follows the same shape: something clever was adopted, it broke in an interesting way, and the write-up explains the fix. Nobody writes the retrospective for the boring choice that just kept working. I want to make the case for that second kind of decision.
+
+## Boring is a design constraint, not an absence of one
+
+"Boring" doesn't mean unmaintained or dated. It means: widely used, well-documented, has failed in public before so the failure modes are known, and doesn't require you to be the person who discovers its edge cases in production.
+
+A minimal example of what that looks like in a Terraform module — using a managed database over a self-hosted one, specifically because the failure modes of the managed version are somebody else's on-call rotation to have already found:
+
+```yaml
+# infra/database.tf (rendered as config for readability)
+resource: aws_rds_instance
+engine: postgres
+engine_version: "16"
+multi_az: true
+backup_retention_period: 7
+deletion_protection: true
+```
+
+Nothing here is interesting. That's the point — the interesting version of this file is usually the one that shows up in an incident review eighteen months later.
+
+## Where "boring" earns its keep
+
+- **Postgres over a new-generation database** for anything with real transactional requirements, because two decades of production use means most of the ways it fails are already documented somewhere.
+- **A managed queue over a hand-rolled one**, because the hand-rolled version's interesting failure mode is usually redelivery semantics under partition, discovered live.
+- **Health checks that page a human** over ones that attempt automatic remediation, until the remediation path itself has been tested under real failure conditions — an auto-healer that doesn't understand *why* something failed can make an outage worse, quietly, before anyone notices.
+
+<Callout type="note">
+The common thread isn't "avoid new technology." It's "the cost of a component's failure modes being well understood is often lower than the cost of its being marginally more efficient."
+</Callout>
+
+## Where it doesn't apply
+
+Boring is a default, not a rule. If the interesting option solves a problem the boring one genuinely can't — real-time collaborative editing needs something closer to a CRDT than a plain relational model — that's not a case for boring infrastructure, that's a case for the right tool. The failure mode to avoid is choosing the interesting option when the boring one would have worked fine, because the interesting option was more fun to set up.
+
+## The actual argument
+
+Every piece of infrastructure you run is something your team is implicitly agreeing to become experts in eventually, usually at 3am, usually under pressure. Boring infrastructure means that expertise probably already exists somewhere — in documentation, in a runbook someone else wrote, in a Stack Overflow answer from 2019. That's not a limitation. It's the entire reason to choose it.

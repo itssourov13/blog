@@ -1,0 +1,61 @@
+---
+title: "Shipping a Side Project in a Weekend, Without Cutting Corners"
+subtitle: "The corners you actually need are smaller than the list you're imagining."
+excerpt: "A working log of scoping, building, and deploying a small project in two days — and the specific corners that turned out to be safe to cut."
+category: "development"
+tags: ["side-projects", "postgres", "shipping"]
+publishedAt: "2026-02-10"
+---
+
+"Cutting corners" gets treated as one category, but the corners split into two very different kinds: the ones that save you time now and cost you later, and the ones that were never load-bearing in the first place. A weekend project only works if you can tell those apart quickly.
+
+## Saturday: scope down to the actual question
+
+The project was a small tool to track which of my dependencies had unpatched CVEs against the versions I was actually running — not a general vulnerability scanner, just something narrow enough to finish. The corner that mattered most was deciding, up front, what the tool was *not* going to do: no multi-user accounts, no historical trend charts, no notification system. Just: paste a lockfile, get a list, done.
+
+Schema first, because it forces the scope question to get answered honestly:
+
+```sql
+create table dependencies (
+  id serial primary key,
+  name text not null,
+  version text not null,
+  ecosystem text not null,
+  checked_at timestamptz not null default now()
+);
+
+create table advisories (
+  id serial primary key,
+  dependency_id integer references dependencies(id) on delete cascade,
+  cve text not null,
+  severity text not null,
+  summary text not null
+);
+```
+
+No `users` table. No `organizations` table. Not because they're never needed — because they weren't needed for the actual question I was answering this weekend.
+
+## Sunday: the corners that were safe to cut
+
+- **No background jobs.** The check runs synchronously when you submit a lockfile. Slower, but there is exactly one code path to reason about, and nobody's waiting on a queue at 2am.
+- **No auth.** It's a stateless tool — you paste input, you get output, nothing is stored against an identity. Skipping auth here isn't a shortcut with a bill due later; there's no user data it would be protecting.
+- **One deployment target, decided in advance.** I didn't evaluate five hosting providers. I picked the one I already had an account with and moved on.
+
+## The corner I didn't cut
+
+Input validation on the lockfile parser stayed non-negotiable, because it's user-supplied content parsed into structured data — the exact shape of bug that turns a side project into an incident, side project or not.
+
+```bash
+# fuzzing the parser for an afternoon was the one place
+# I spent "extra" time on purpose
+cargo install cargo-fuzz
+cargo fuzz run parse_lockfile -- -max_total_time=1800
+```
+
+<Callout type="note">
+The test for whether a corner is safe to cut isn't "is this best practice." It's "does skipping this make the system behave unpredictably for someone other than me." Auth and background jobs failed that test in the other direction here — skipping them made the system *more* predictable, not less, because there was less state to reason about.
+</Callout>
+
+## What shipped
+
+A single binary, one Postgres table pair, no auth, no queue, deployed Sunday night. It's not a product. It answered the question I built it to answer, and the two hours I spent fuzzing the one genuinely risky part are the two hours I don't regret.

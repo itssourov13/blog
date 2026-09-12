@@ -1,0 +1,62 @@
+---
+title: "Understanding the Modern Web Attack Surface"
+subtitle: "Browsers do more than they used to. So does the surface you have to defend."
+excerpt: "Service workers, third-party scripts, and postMessage handlers have quietly turned the browser into a runtime with its own threat model. A tour of where the modern web actually breaks."
+category: "security"
+tags: ["web", "browser-security", "csp", "supply-chain"]
+publishedAt: "2026-09-02"
+featured: true
+---
+
+Ten years ago, "web security" mostly meant SQL injection, XSS, and CSRF. Those are all still very real. But the browser has quietly become a full application runtime — service workers, WebAssembly, the Push API, `postMessage`, extension bridges — and each of those extensions carries its own threat model that most teams never explicitly reviewed.
+
+This isn't a doom post. It's a map. If you own a production web app, these are the areas worth walking through deliberately, rather than assuming your last pentest covered them.
+
+## The surface has moved
+
+Classic input-validation bugs haven't gone away, but the *interesting* incidents over the last few years have clustered somewhere else: in the boundary between your code and everything you didn't write yourself.
+
+- **Third-party scripts** run with the same privileges as your first-party code. An analytics tag, a chat widget, a payment SDK — each one is a supply chain dependency with DOM access.
+- **Service workers** persist across page loads and can intercept every fetch your origin makes. A bug here doesn't just affect the current tab; it affects the next hundred visits.
+- **`postMessage` handlers** are frequently written without checking `event.origin`, turning a convenience API into an open door for any embedded iframe.
+
+<Callout type="warning">
+If you can't list every third-party script your site loads in production, right now, without checking a dashboard first — that's the gap worth closing before anything else on this list.
+</Callout>
+
+## Third-party code is your code
+
+The mental model that helps here: treat every script tag as a pull request you can't review. You can still constrain what it's allowed to do.
+
+A reasonably strict Content Security Policy is the highest-leverage thing most teams haven't finished rolling out, mostly because the migration path (`report-only` mode, watching violations, then enforcing) takes real calendar time.
+
+```json
+{
+  "Content-Security-Policy": "default-src 'self'; script-src 'self' https://cdn.example.com; object-src 'none'; base-uri 'self'; frame-ancestors 'none'"
+}
+```
+
+Two things matter more than the policy itself:
+
+1. **Report-only first.** Ship `Content-Security-Policy-Report-Only` with a `report-to` endpoint for a few weeks before enforcing anything. You will find things.
+2. **Nonce or hash your inline scripts**, don't reach for `'unsafe-inline'` as a permanent fix. It defeats most of what CSP is for.
+
+### Service workers deserve a threat model of their own
+
+A service worker that caches aggressively and doesn't validate what it's serving back can turn a single stale deploy into a persistent problem across every returning visitor. Worth auditing specifically:
+
+- Does the worker ever cache responses containing user-specific or authenticated data?
+- Is there a clean update/kill-switch path if you ship a bad worker version?
+- Does `skipWaiting` behavior match what you actually want on rollback?
+
+## A short checklist
+
+None of this needs to happen simultaneously. In rough order of leverage:
+
+- Inventory every third-party script and iframe currently loaded in production.
+- Turn on CSP in report-only mode and watch it for two weeks.
+- Audit `postMessage` listeners for missing `event.origin` checks.
+- Review your service worker's cache logic for anything user-specific.
+- Set `Cross-Origin-Opener-Policy` and `Cross-Origin-Embedder-Policy` if you rely on `SharedArrayBuffer` or want tab isolation from cross-origin popups.
+
+The common thread is that the browser gives you real primitives to reduce this surface — CSP, COOP/COEP, origin checks, permissions policies. Most incidents I've seen weren't novel attacks; they were controls that existed, and just weren't turned on yet.

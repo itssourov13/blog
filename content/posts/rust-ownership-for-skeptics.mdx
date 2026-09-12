@@ -1,0 +1,65 @@
+---
+title: "A Tour of Rust's Ownership Model, for Skeptics"
+subtitle: "You don't need to love the borrow checker. You need a mental model that makes it stop fighting you."
+excerpt: "Most explanations of ownership start with the rules. This one starts with the problem the rules exist to solve, which is where they actually start making sense."
+category: "programming"
+tags: ["rust", "memory-safety", "language-design"]
+publishedAt: "2026-05-06"
+---
+
+Most people's first week with Rust is spent arguing with the borrow checker. Most explanations respond to that by explaining the rules faster. That's backwards — the rules make a lot more sense once you understand the specific problem they're there to prevent.
+
+## The problem, first
+
+In a language with manual memory management, two pointers to the same data can outlive each other in surprising ways:
+
+```c
+char *name = malloc(32);
+strcpy(name, "example");
+free(name);
+printf("%s\n", name); // use-after-free — this may work, may crash,
+                       // may silently corrupt something unrelated
+```
+
+Garbage-collected languages solve this by tracking references at runtime and freeing memory once nothing points to it anymore — correct, but with a runtime cost and pauses that some domains can't afford. Rust's bet is that most of this can be checked at *compile time*, if the compiler can prove there's exactly one owner responsible for cleanup, always.
+
+## Ownership is just a single rule
+
+Every value has exactly one owner. When the owner goes out of scope, the value is dropped. That's the whole rule.
+
+```rust
+fn main() {
+    let name = String::from("example"); // `name` owns this String
+    let moved = name;                   // ownership moves to `moved`
+    // println!("{}", name);            // error: `name` no longer owns anything
+    println!("{}", moved);              // fine
+}
+```
+
+That single rule eliminates use-after-free and double-free by construction: there's never a moment where two owners both think they're responsible for freeing the same memory, because "own" only ever means one thing.
+
+## Borrowing is the escape hatch
+
+Moving ownership everywhere would make the language unusable — you'd have to pass values back out of every function that touches them. Borrowing lets you hand out temporary access without transferring ownership:
+
+```rust
+fn print_length(s: &String) {
+    println!("{} is {} bytes", s, s.len());
+} // `s` is a reference; nothing is dropped when it goes out of scope
+
+fn main() {
+    let name = String::from("example");
+    print_length(&name);
+    print_length(&name); // still valid — we only ever borrowed it
+}
+```
+
+The rule that trips people up — one mutable borrow *or* any number of immutable borrows, never both — isn't arbitrary either. It's the same guarantee C++ gives you informally and hopes you maintain by convention: nothing can read a value while something else is in the middle of mutating it. Rust just checks it instead of hoping.
+
+<Callout type="note">
+When the borrow checker rejects something that looks obviously fine, it's almost always because it can't yet prove the lifetimes work out — not because the code is actually wrong. That distinction is worth holding onto; it turns "the compiler is wrong" into "I need to restructure this so the compiler can see what I already know."
+</Callout>
+
+## Where this actually pays off
+
+The honest case for learning this isn't "no garbage collector." It's that entire categories of bugs — use-after-free, data races across threads, iterator invalidation — become compile errors instead of production incidents. You pay for that upfront, while writing the code, instead of later, while debugging it at 2am. For some domains that trade is obviously worth it. For others, it isn't. Knowing which is the actually useful skill; the syntax is just the entry fee.

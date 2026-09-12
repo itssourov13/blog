@@ -1,0 +1,115 @@
+// This schema documents the data model the app is designed to grow into.
+// The initial version reads posts from /content/posts (MDX + frontmatter) —
+// see lib/posts.ts — so nothing here is wired up yet. When you're ready to
+// move to a database-backed editor:
+//
+//   1. npm install prisma @prisma/client
+//   2. npx prisma generate
+//   3. npx prisma migrate dev --name init
+//   4. Replace the file-system reads in lib/posts.ts with Prisma queries,
+//      keeping the same return shapes (see lib/types.ts) so components
+//      don't need to change.
+//
+// generator client {
+//   provider = "prisma-client-js"
+// }
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String?
+  passwordHash  String?
+  role          Role      @default(READER)
+  author        Author?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+enum Role {
+  READER
+  AUTHOR
+  ADMIN
+}
+
+model Author {
+  id          String   @id @default(cuid())
+  user        User     @relation(fields: [userId], references: [id])
+  userId      String   @unique
+  slug        String   @unique
+  displayName String
+  bio         String
+  avatarUrl   String?
+  github      String?
+  linkedin    String?
+  website     String?
+  posts       Post[]
+}
+
+model Post {
+  id            String    @id @default(cuid())
+  slug          String    @unique
+  title         String
+  subtitle      String?
+  excerpt       String
+  content       String    @db.Text
+  coverImage    String?
+  author        Author    @relation(fields: [authorId], references: [id])
+  authorId      String
+  category      Category  @relation(fields: [categoryId], references: [id])
+  categoryId    String
+  tags          Tag[]
+  comments      Comment[]
+  readingTime   Int // minutes, computed on save
+  featured      Boolean   @default(false)
+  published     Boolean   @default(false)
+  publishedAt   DateTime?
+  updatedAt     DateTime  @updatedAt
+  createdAt     DateTime  @default(now())
+
+  @@index([published, publishedAt])
+  @@index([categoryId])
+}
+
+model Category {
+  id    String @id @default(cuid())
+  slug  String @unique
+  name  String
+  posts Post[]
+}
+
+model Tag {
+  id    String @id @default(cuid())
+  slug  String @unique
+  name  String
+  posts Post[]
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  post      Post     @relation(fields: [postId], references: [id])
+  postId    String
+  authorName String
+  authorEmail String
+  body      String   @db.Text
+  approved  Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([postId])
+}
+
+model NewsletterSubscriber {
+  id          String    @id @default(cuid())
+  email       String    @unique
+  subscribedAt DateTime @default(now())
+  confirmedAt  DateTime?
+  unsubscribedAt DateTime?
+}
