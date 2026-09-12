@@ -1,4 +1,4 @@
-import { seededRandom } from "@/lib/utils";
+import { cn, seededRandom } from "@/lib/utils";
 import type { Category } from "@/lib/types";
 
 type Family = "circuit" | "network" | "field";
@@ -74,12 +74,22 @@ function generateField(rand: () => number) {
 export function CoverArt({
   seed,
   category,
+  src,
   className,
 }: {
   seed: string;
   category: Category;
+  /** When set (e.g. a post's `coverImage`), render the actual image instead
+   *  of the generated artwork. `object-cover` mirrors the SVG's
+   *  `preserveAspectRatio="xMidYMid slice"` so both fill their frame the
+   *  same way. Browsers decode the source format (webp, png, …) natively. */
+  src?: string | null;
   className?: string;
 }) {
+  if (src) {
+    return <img src={src} alt="" className={cn(className, "object-cover")} />;
+  }
+
   const rand = seededRandom(seed);
   const family = FAMILY_BY_CATEGORY[category];
 

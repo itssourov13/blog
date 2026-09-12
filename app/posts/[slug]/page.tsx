@@ -151,7 +151,12 @@ export default async function PostPage({
 
       <div className="container-content">
         <div className="aspect-[21/9] overflow-hidden rounded-sm">
-          <CoverArt seed={post.slug} category={post.category} className="h-full w-full" />
+          <CoverArt
+            seed={post.slug}
+            category={post.category}
+            src={post.coverImage}
+            className="h-full w-full"
+          />
         </div>
       </div>
 

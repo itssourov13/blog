@@ -30,6 +30,10 @@ export interface PostFrontmatter {
   publishedAt: string; // ISO date
   updatedAt?: string; // ISO date
   featured?: boolean;
+  /** Absolute public path to a custom cover image (e.g. "/covers/foo.webp").
+   *  When set, the OpenGraph image renders it; otherwise the generated
+   *  CoverArt composition is used. Mirrors `Post.coverImage` in prisma/schema.prisma. */
+  coverImage?: string;
   coverSeed?: string; // optional override for the generated cover art seed
 }
 

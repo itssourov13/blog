@@ -17,6 +17,7 @@ export function FeaturedArticle({ post }: { post: Post }) {
           <CoverArt
             seed={post.slug}
             category={post.category}
+            src={post.coverImage}
             className="h-full w-full transition-transform duration-500 ease-out group-hover:scale-[1.02]"
           />
         </div>
