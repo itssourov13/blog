@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import { Github, Globe, Linkedin } from "lucide-react";
-import { CoverArt } from "@/components/article/CoverArt";
 import { author, site } from "@/lib/author";
 
 export const metadata: Metadata = {
@@ -11,8 +11,15 @@ export const metadata: Metadata = {
 export default function AboutPage() {
   return (
     <div className="container-content grid gap-12 py-16 md:grid-cols-[1fr_1.3fr] md:items-start md:py-24">
-      <div className="mx-auto aspect-square w-48 overflow-hidden rounded-full sm:w-56 md:mx-0 md:w-full">
-        <CoverArt seed="author-portrait" category="engineering" className="h-full w-full" />
+      <div className="relative mx-auto aspect-square w-48 overflow-hidden rounded-full sm:w-56 md:mx-0 md:w-full">
+        <Image
+          src="/covers/profile.png"
+          alt={author.name}
+          fill
+          priority
+          sizes="(max-width: 768px) 192px, 400px"
+          className="object-cover"
+        />
       </div>
 
       <div>
