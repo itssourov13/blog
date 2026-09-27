@@ -6,7 +6,7 @@ export const author: Author = {
   bio: "I work on security research, software engineering, and reverse engineering, and write here about what I learn building and breaking systems.",
   github: "https://github.com/itssourov13",
   linkedin: "https://www.linkedin.com/in/mdsourov-mondol630",
-  website: "https://portfolio-vercel-test-portfolio.vercel.app/",
+  website: "https://portfolio-itssourov13.vercel.app/",
 };
 
 export const site = {
