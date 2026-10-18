@@ -5,7 +5,7 @@ export const author: Author = {
   role: "Cybersecurity researcher & engineer",
   bio: "I work on security research, software engineering, and reverse engineering, and write here about what I learn building and breaking systems.",
   github: "https://github.com/itssourov13",
-  linkedin: "https://www.linkedin.com/in/mdsourov-mondol630",
+  linkedin: "https://www.linkedin.com/in/itssourov13",
   website: "https://portfolio-itssourov13.vercel.app/",
 };
 
