@@ -12,6 +12,7 @@ const FAMILY_BY_CATEGORY: Record<Category, Family> = {
   research: "network",
   programming: "network",
   development: "field",
+  "life-community": "field",
   notes: "field",
 };
 

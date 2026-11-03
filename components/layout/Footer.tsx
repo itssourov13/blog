@@ -18,7 +18,7 @@ export function Footer() {
         <div>
           <p className="text-sm font-medium text-foreground">Site</p>
           <nav className="mt-3 flex flex-col gap-2 text-sm text-muted-foreground">
-            <Link href="/writing" className="hover:text-foreground">Writing</Link>
+            <Link href="/writing" className="hover:text-foreground">Journal</Link>
             <Link href="/topics" className="hover:text-foreground">Topics</Link>
             <Link href="/tags" className="hover:text-foreground">Tags</Link>
             <Link href="/about" className="hover:text-foreground">About</Link>

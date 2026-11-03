@@ -31,9 +31,10 @@ export default function AboutPage() {
           {author.bio}
         </p>
         <p className="mt-4 max-w-xl leading-relaxed text-muted-foreground">
-          {site.name} is where that work gets written up — security research,
-          engineering notes, and the occasional reverse engineering rabbit
-          hole, kept as a record for future-me as much as for anyone reading.
+          {site.name} is a personal journal for the things I learn, build,
+          explore, and experience — from security research and engineering to
+          everyday moments, personal reflections, and community work. It is a
+          record for future-me as much as for anyone reading.
         </p>
 
         <div className="mt-8 flex flex-wrap gap-6">

@@ -9,7 +9,8 @@ export const CATEGORIES: CategoryMeta[] = [
   { slug: "web", name: "Web", description: "Browsers, the web platform, and the modern attack surface." },
   { slug: "cloud", name: "Cloud", description: "Infrastructure, deployment, and distributed systems." },
   { slug: "development", name: "Development", description: "Process, workflow, and building things end to end." },
-  { slug: "notes", name: "Notes", description: "Shorter observations that didn't need a full write-up." },
+  { slug: "life-community", name: "Life & Community", description: "Everyday moments, personal experiences, reflections, and community work worth remembering." },
+  { slug: "notes", name: "Notes", description: "Shorter observations that did not need a full write-up." },
 ];
 
 export function getCategoryName(slug: Category): string {

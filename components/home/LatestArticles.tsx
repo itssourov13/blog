@@ -9,7 +9,7 @@ export function LatestArticles({ posts }: { posts: Post[] }) {
   return (
     <section className="container-content border-t border-border py-16 md:py-20">
       <h2 className="font-serif text-2xl font-medium text-foreground md:text-3xl">
-        Latest Writing
+        Recent Posts
       </h2>
 
       <div className="mt-10 grid gap-x-8 gap-y-12 md:grid-cols-3">

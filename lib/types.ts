@@ -7,6 +7,7 @@ export type Category =
   | "web"
   | "cloud"
   | "development"
+  | "life-community"
   | "notes";
 
 export interface CategoryMeta {

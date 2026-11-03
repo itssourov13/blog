@@ -4,7 +4,7 @@ import { getCategoryCounts } from "@/lib/posts";
 
 export const metadata: Metadata = {
   title: "Topics",
-  description: "Browse articles by topic: security, research, engineering, and more.",
+  description: "Explore this personal journal by topic, from technical research to everyday experiences and community work.",
 };
 
 export default function TopicsPage() {
@@ -14,7 +14,7 @@ export default function TopicsPage() {
     <div className="container-content py-16">
       <h1 className="font-serif text-4xl font-medium text-foreground md:text-5xl">Topics</h1>
       <p className="mt-3 max-w-lg text-muted-foreground">
-        Everything written here, grouped by subject.
+        From technical research and engineering to everyday experiences, personal reflections, and community work.
       </p>
 
       <div className="mt-12 grid gap-x-10 gap-y-2 sm:grid-cols-2">

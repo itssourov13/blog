@@ -1,4 +1,4 @@
-# Sourov — Security & Engineering Notes
+# Sourov — Technology, Life & Community
 
 ![Next.js](https://img.shields.io/badge/Next.js-16-000000?logo=next.js&logoColor=white)
 ![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)
@@ -6,10 +6,9 @@
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4-06B6D4?logo=tailwindcss&logoColor=white)
 ![Node](https://img.shields.io/badge/Node-%E2%89%A520.9-339933?logo=node.js&logoColor=white)
 
-A standalone technical publication covering **security research, software engineering, and
-reverse engineering**. Built as a fast, statically-rendered Next.js App Router site with a
-file-based MDX content layer — no CMS, no database, and no external image dependencies
-required to run it.
+A personal publication covering **cybersecurity, software engineering, everyday experiences,
+personal reflections, and community work**. Built as a fast, statically-rendered Next.js App
+Router site with a file-based MDX content layer — no CMS or database required.
 
 > **Status:** feature-complete and verified — `npm run typecheck` and `npm run build` both
 > pass, and the UI is validated in a real browser at mobile, tablet, and desktop widths.
@@ -126,7 +125,7 @@ components/
 ├── mdx/                      Components exposed inside MDX (Callout, Figure, PhotoGallery, mdx-components)
 ├── search/                   Command-style search modal
 ├── theme/                    Theme provider + toggle
-├── writing/                  Category/tag/year filter bar
+├── writing/                  Journal category/tag/year filter bar
 └── ui/                       Shared primitives (Modal — focus trap, scroll lock, inert)
 
 lib/
@@ -198,7 +197,7 @@ Example:
 ```
 
 **Available categories:** `security`, `research`, `engineering`, `reverse-engineering`,
-`programming`, `web`, `cloud`, `development`, `notes`.
+`programming`, `web`, `cloud`, `development`, `life-community`, `notes`.
 
 Reading time, word count, and the table of contents are computed from the content — do not
 set them in frontmatter.
