@@ -4,8 +4,8 @@ import { CategoryFilter } from "@/components/writing/CategoryFilter";
 import { getAllPosts, getAllYears, getCategoryCounts } from "@/lib/posts";
 
 export const metadata: Metadata = {
-  title: "Writing",
-  description: "Every article on security research, engineering, and software — filterable by topic, tag, or year.",
+  title: "Journal",
+  description: "Technical articles, personal experiences, everyday moments, and community stories — filterable by topic, tag, or year.",
 };
 
 export default async function WritingPage({
@@ -32,9 +32,9 @@ export default async function WritingPage({
 
   return (
     <div className="container-content py-16">
-      <h1 className="font-serif text-4xl font-medium text-foreground md:text-5xl">Writing</h1>
-      <p className="mt-3 max-w-lg text-muted-foreground">
-        Every article, filterable by topic, tag, or year.
+      <h1 className="font-serif text-4xl font-medium text-foreground md:text-5xl">Journal</h1>
+      <p className="mt-3 max-w-xl text-muted-foreground">
+        Technical articles, personal experiences, everyday moments, and community stories — all in one place.
       </p>
 
       <CategoryFilter

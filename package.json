@@ -2,7 +2,7 @@
   "name": "sourov-blog",
   "version": "0.1.0",
   "private": true,
-  "description": "A technical publication covering security research, software engineering, and systems notes.",
+  "description": "A personal blog about cybersecurity, software engineering, everyday life, and community work.",
   "scripts": {
     "dev": "next dev",
     "build": "next build",

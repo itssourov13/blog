@@ -8,7 +8,7 @@ import { site } from "@/lib/author";
 
 const NAV_LINKS = [
   { href: "/", label: "Home" },
-  { href: "/writing", label: "Writing" },
+  { href: "/writing", label: "Journal" },
   { href: "/topics", label: "Topics" },
   { href: "/about", label: "About" },
 ];
