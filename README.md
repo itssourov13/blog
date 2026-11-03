@@ -123,7 +123,7 @@ components/
 ├── article/                  ArticleCard, ArticlePager, BackToTop, Breadcrumbs, CodeBlock,
 │                             Comments, CopyButton, CoverArt, PostMeta, ReadingProgress,
 │                             RelatedArticles, ShareButtons, TableOfContents, Tag
-├── mdx/                      Components exposed inside MDX (Callout, Figure, mdx-components)
+├── mdx/                      Components exposed inside MDX (Callout, Figure, PhotoGallery, mdx-components)
 ├── search/                   Command-style search modal
 ├── theme/                    Theme provider + toggle
 ├── writing/                  Category/tag/year filter bar
@@ -176,6 +176,26 @@ const answer = 42; // highlighted line
 
 <Figure seed="some-seed" category="security" caption="Optional caption." />
 ````
+
+For real post photography, place optimized images under public/ and use PhotoGallery
+with nested GalleryImage entries. Each image declares its own dimensions, alt text, and
+caption; the gallery preserves the natural aspect ratio instead of cropping portraits into
+a wide frame. Set coverImage in frontmatter to reuse a local photo as the article cover and
+listing-card artwork.
+
+Example:
+
+```mdx
+<PhotoGallery>
+  <GalleryImage
+    src="/images/example.webp"
+    alt="A short description of the image"
+    caption="An optional caption."
+    width="1350"
+    height="1800"
+  />
+</PhotoGallery>
+```
 
 **Available categories:** `security`, `research`, `engineering`, `reverse-engineering`,
 `programming`, `web`, `cloud`, `development`, `notes`.

@@ -4,6 +4,7 @@ import Image from "next/image";
 import { CodeBlock } from "@/components/article/CodeBlock";
 import { Callout } from "./Callout";
 import { Figure } from "./Figure";
+import { GalleryImage, PhotoGallery } from "./PhotoGallery";
 
 function ProseLink(props: AnchorHTMLAttributes<HTMLAnchorElement>) {
   const isExternal = typeof props.href === "string" && /^https?:\/\//.test(props.href);
@@ -66,4 +67,6 @@ export const mdxComponents: MDXComponents = {
   img: ProseImage,
   Callout,
   Figure,
+  PhotoGallery,
+  GalleryImage,
 };
