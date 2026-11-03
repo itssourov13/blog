@@ -5,6 +5,7 @@ excerpt: "Modern browsers are no longer simple document viewers. They are multi-
 category: "research"
 tags: ["browser-security", "sandbox", "memory-safety", "vulnerability-research", "chromium", "security-architecture"]
 publishedAt: "2026-09-12"
+updatedAt: "2026-11-03"
 featured: false
 coverImage: "/covers/modern-browser-security-boundaries.webp"
 ---
@@ -17,7 +18,7 @@ That makes the browser security problem fundamentally different from securing a 
 
 The important question is not simply:
 
-«"Can an attacker execute code?"»
+“Can an attacker execute code?”
 
 The more useful question is:
 
@@ -27,7 +28,7 @@ Modern browser security is largely built around answering that question.
 
 This article examines the architecture behind those boundaries, why renderer compromise does not necessarily mean full browser compromise, why sandbox escapes remain valuable targets, and how memory safety and AI-assisted vulnerability research are changing the browser security landscape.
 
-1. The Browser Is a Security Boundary Stack
+## 1. The Browser Is a Security Boundary Stack
 
 A useful way to think about a modern browser is as a collection of nested trust boundaries rather than one monolithic application.
 
@@ -70,7 +71,7 @@ A renderer processing arbitrary web content should not automatically have the sa
 
 That separation is one of the most important assumptions behind browser security.
 
-2. The Renderer Should Be Treated as Hostile
+## 2. The Renderer Should Be Treated as Hostile
 
 Web content is inherently untrusted.
 
@@ -110,7 +111,7 @@ The sandbox is therefore not merely an operating-system feature added for conven
 
 It is part of the browser's security model.
 
-3. Memory Corruption Is Often the Beginning, Not the End
+## 3. Memory Corruption Is Often the Beginning, Not the End
 
 Historically, browser vulnerability research has frequently focused on memory corruption.
 
@@ -150,7 +151,7 @@ Breaking one boundary does not necessarily break the next one.
 
 This is one reason modern browser exploitation is better understood as boundary composition rather than a single vulnerability.
 
-4. Why the Sandbox Matters
+## 4. Why the Sandbox Matters
 
 A browser sandbox attempts to reduce what a compromised process can do.
 
@@ -175,7 +176,7 @@ If a vulnerability only compromises a heavily restricted process, an attacker ma
 
 This is the fundamental value of defense in depth.
 
-5. IPC Becomes a Security Boundary
+## 5. IPC Becomes a Security Boundary
 
 Once privileged functionality is separated into different processes, those processes need to communicate.
 
@@ -213,7 +214,7 @@ This is why IPC design is not merely an engineering detail.
 
 IPC is part of the security boundary.
 
-6. Capability Matters More Than Process Names
+## 6. Capability Matters More Than Process Names
 
 A common mistake when analyzing browser security is thinking purely in terms of process names.
 
@@ -245,7 +246,7 @@ rather than simply:
 
 «Which process was compromised?»
 
-7. From Renderer Compromise to Sandbox Escape
+## 7. From Renderer Compromise to Sandbox Escape
 
 A renderer vulnerability can be extremely serious without immediately providing operating-system-level access.
 
@@ -283,7 +284,7 @@ They are attempting to cross a deliberately constructed security boundary.
 
 From a defensive perspective, this also means that sandbox-escape research can reveal architectural weaknesses that ordinary application testing might miss.
 
-8. The Rule of Two
+## 8. The Rule of Two
 
 One useful way to reason about browser security is Chromium's Rule of Two.
 
@@ -313,7 +314,7 @@ The broader lesson is important:
 
 «Security improves when independent defensive assumptions do not all have to hold simultaneously.»
 
-9. Memory Safety Is an Architectural Problem
+## 9. Memory Safety Is an Architectural Problem
 
 Browser security has historically relied heavily on hardening and exploit mitigations.
 
@@ -350,7 +351,7 @@ Consequently, memory safety is not simply a matter of replacing one language wit
 
 It is an architectural migration problem.
 
-10. Why "Rewrite Everything" Is Not the Answer
+## 10. Why "Rewrite Everything" Is Not the Answer
 
 It is tempting to describe memory safety as:
 
@@ -378,7 +379,7 @@ A browser does not become secure because of one programming language.
 
 It becomes more resilient when multiple independent layers reduce the impact of mistakes.
 
-11. The Browser Attack Surface Is Larger Than JavaScript
+## 11. The Browser Attack Surface Is Larger Than JavaScript
 
 When people hear "browser vulnerability," they often immediately think about JavaScript.
 
@@ -426,7 +427,7 @@ This creates an attack-surface graph rather than a single attack surface:
 
 Security research therefore benefits from studying input × component × privilege rather than focusing exclusively on JavaScript execution.
 
-12. Why Fuzzing Alone Is Not Enough
+## 12. Why Fuzzing Alone Is Not Enough
 
 Fuzzing remains one of the most effective techniques for discovering browser vulnerabilities.
 
@@ -464,7 +465,7 @@ The architecture determines why the difference matters.
 
 This is where vulnerability research moves beyond automated testing.
 
-13. Vulnerability Research Is Becoming More Architectural
+## 13. Vulnerability Research Is Becoming More Architectural
 
 A mature browser security workflow increasingly combines several perspectives:
 
@@ -492,7 +493,7 @@ A vulnerability is not just a faulty line of code.
 
 It exists inside an architecture.
 
-14. AI Is Changing Vulnerability Discovery
+## 14. AI Is Changing Vulnerability Discovery
 
 One of the most interesting developments in modern browser security research is the increasing use of AI-assisted vulnerability discovery.
 
@@ -522,7 +523,7 @@ The important distinction is between automation of analysis and automation of ex
 
 For defensive research, the most valuable role of AI may be helping researchers understand increasingly complex systems faster.
 
-15. AI Does Not Eliminate the Need for Security Researchers
+## 15. AI Does Not Eliminate the Need for Security Researchers
 
 AI-assisted analysis also has limitations.
 
@@ -562,7 +563,7 @@ It is:
 
 «AI increases the amount of code and evidence a researcher can reason about.»
 
-16. Historical Vulnerabilities Still Matter
+## 16. Historical Vulnerabilities Still Matter
 
 Modern browser security research also benefits from studying historical vulnerabilities.
 
@@ -597,7 +598,7 @@ Researchers can learn from:
 
 This makes vulnerability history a form of security telemetry.
 
-17. Security Documentation Is Part of the Threat Model
+## 17. Security Documentation Is Part of the Threat Model
 
 Security documentation is sometimes treated as secondary to source code.
 
@@ -623,7 +624,7 @@ Documentation therefore becomes part of the security control.
 
 A good security architecture should make important invariants visible.
 
-18. Thinking of the Browser as a Security Graph
+## 18. Thinking of the Browser as a Security Graph
 
 A useful mental model is to represent the browser as a graph.
 
@@ -656,11 +657,11 @@ Questions become:
 
 This model is especially useful when analyzing large, multi-process systems.
 
-19. The Most Important Question: What Happens After Compromise?
+## 19. The Most Important Question: What Happens After Compromise?
 
 A vulnerability report that stops at:
 
-«"This causes a crash."»
+“This causes a crash.”
 
 is incomplete from a security-architecture perspective.
 
@@ -691,7 +692,7 @@ This approach helps distinguish:
 
 It also produces better defensive fixes because it identifies the architectural assumption that needs reinforcement.
 
-20. The Future of Browser Security Research
+## 20. The Future of Browser Security Research
 
 Several trends are likely to shape browser security research over the coming years.
 
@@ -741,7 +742,7 @@ Impact
 
 rather than treating each vulnerability as an isolated coding mistake.
 
-21. Conclusion
+## 21. Conclusion
 
 Modern browser security is fundamentally about containing failure.
 
@@ -775,7 +776,7 @@ But none of these mechanisms replaces architectural security.
 
 The deeper lesson is simple:
 
-«A vulnerability becomes significantly more dangerous when multiple independent security assumptions fail at the same time.»
+“A vulnerability becomes significantly more dangerous when multiple independent security assumptions fail at the same time.”
 
 That is why modern browser security research is increasingly less about finding one broken function and more about understanding the boundaries surrounding it.
 
